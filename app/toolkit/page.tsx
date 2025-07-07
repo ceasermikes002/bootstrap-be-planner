@@ -3,7 +3,10 @@ import Link from "next/link"
 export default function ToolkitPage() {
   return (
     <main className="max-w-2xl mx-auto py-12 px-4">
-      <h1 className="text-2xl font-bold mb-6">Bootstrap Planner Toolkit</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Bootstrap Planner Toolkit</h1>
+        <Link href="/" className="text-sm text-blue-600 underline">Back to Home</Link>
+      </div>
       <p className="mb-8 text-gray-700">
         This toolkit explains the key concepts and fields used in the Bootstrap Planner. Use it as a reference to understand how your numbers are calculated and what they mean for your financial journey as a founder.
       </p>
