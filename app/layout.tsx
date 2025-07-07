@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Outfit } from "next/font/google"
 import "./globals.css"
+import Link from "next/link"
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -32,7 +33,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${outfit.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${outfit.variable} font-sans antialiased`}>
+        <main className="min-h-screen bg-gray-50">{children}</main>
+      </body>
     </html>
   )
 }

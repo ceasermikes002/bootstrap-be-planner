@@ -4,6 +4,7 @@ import { ResultsPanel } from "@/components/results-panel"
 import { GrowthProjection } from "@/components/growth-projection"
 import { ShareExport } from "@/components/share-export"
 import { CurrencyConverter } from "@/components/currency-converter"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-light text-gray-800 mb-2">Startup Bootstrap Break-even Planner</h1>
           <p className="text-lg text-gray-600 font-light">"Know when you're free to quit."</p>
+          <Link href="/toolkit" className="text-sm text-blue-600 underline mr-6">Toolkit</Link>
         </div>
 
         {/* Main Content */}

@@ -25,11 +25,17 @@ interface PlannerState {
   currency: Currency
   exchangeRates: Record<string, number>
   lastRateUpdate: number
+  useBuffer: boolean
+  userSavings: number
+  warChest: number
   updateExpense: (key: keyof Expenses, value: number) => void
   updateIncome: (key: keyof Income, value: number) => void
   setGrowthRate: (rate: number) => void
   setCurrency: (currency: Currency) => void
   setExchangeRates: (rates: Record<string, number>) => void
+  setUseBuffer: (use: boolean) => void
+  setUserSavings: (amount: number) => void
+  setWarChest: (amount: number) => void
   convertToCurrency: (targetCurrency: Currency) => Promise<void>
   getTotalExpenses: () => number
   getTotalIncome: () => number
@@ -63,6 +69,9 @@ export const usePlannerStore = create<PlannerState>()(
       currency: "USD",
       exchangeRates: {},
       lastRateUpdate: 0,
+      useBuffer: true,
+      userSavings: 0,
+      warChest: 0,
       updateExpense: (key, value) =>
         set((state) => ({
           expenses: { ...state.expenses, [key]: value },
@@ -78,6 +87,9 @@ export const usePlannerStore = create<PlannerState>()(
           exchangeRates: rates,
           lastRateUpdate: Date.now(),
         }),
+      setUseBuffer: (use) => set({ useBuffer: use }),
+      setUserSavings: (amount) => set({ userSavings: amount }),
+      setWarChest: (amount) => set({ warChest: amount }),
       convertToCurrency: async (targetCurrency) => {
         const state = get()
         if (state.currency === targetCurrency) return
@@ -120,32 +132,25 @@ export const usePlannerStore = create<PlannerState>()(
       },
       getSafetyBuffer: () => {
         const totalExpenses = get().getTotalExpenses()
-        return Math.round(totalExpenses * 0.25) // 25% safety buffer
+        const { useBuffer } = get()
+        return useBuffer ? Math.round(totalExpenses * 0.25) : 0
       },
       getMonthlyDeficit: () => {
         const totalIncome = get().getTotalIncome()
         const totalExpenses = get().getTotalExpenses()
         const safetyBuffer = get().getSafetyBuffer()
-        const trueFreedomNumber = totalExpenses + safetyBuffer
-
+        const warChest = get().warChest
+        const trueFreedomNumber = totalExpenses + safetyBuffer + warChest
         return Math.max(0, trueFreedomNumber - totalIncome)
       },
       getFreedomPercentage: () => {
         const totalIncome = get().getTotalIncome()
         const totalExpenses = get().getTotalExpenses()
         const safetyBuffer = get().getSafetyBuffer()
-
-        if (totalExpenses === 0) return 0
-
-        const trueFreedomNumber = totalExpenses + safetyBuffer
+        const warChest = get().warChest
+        const trueFreedomNumber = totalExpenses + safetyBuffer + warChest
+        if (trueFreedomNumber === 0) return 0
         const percentage = Math.round((totalIncome / trueFreedomNumber) * 100)
-
-        // Cap at 99% if there's any deficit - never show 100%+ unless truly safe
-        const deficit = get().getMonthlyDeficit()
-        if (deficit > 0) {
-          return Math.min(percentage, 99)
-        }
-
         return percentage
       },
       isFinanciallyReady: () => {
@@ -156,53 +161,39 @@ export const usePlannerStore = create<PlannerState>()(
         const { income, growthRate } = get()
         const totalExpenses = get().getTotalExpenses()
         const safetyBuffer = get().getSafetyBuffer()
+        const warChest = get().warChest
         const currentIncome = get().getTotalIncome()
-
-        const trueFreedomTarget = totalExpenses + safetyBuffer
-
+        const trueFreedomTarget = totalExpenses + safetyBuffer + warChest
         if (currentIncome >= trueFreedomTarget) return 0
         if (trueFreedomTarget === 0) return 0
         if (growthRate === 0) return Number.POSITIVE_INFINITY
         if (currentIncome === 0) return Number.POSITIVE_INFINITY
-
         const currentMRR = income.mrr
         const staticIncome = income.freelance + income.passive + income.salary
-
         if (staticIncome >= trueFreedomTarget) return 0
-
         const neededMRRGrowth = trueFreedomTarget - staticIncome
-
         if (currentMRR >= neededMRRGrowth) return 0
         if (currentMRR === 0) return Number.POSITIVE_INFINITY
-
         const monthlyGrowthRate = growthRate / 100
         const months = Math.log(neededMRRGrowth / currentMRR) / Math.log(1 + monthlyGrowthRate)
-
         return Math.min(Math.ceil(Math.max(0, months)), 120)
       },
       getRunwayMonths: () => {
         const totalIncome = get().getTotalIncome()
         const totalExpenses = get().getTotalExpenses()
         const deficit = get().getMonthlyDeficit()
-
+        const userSavings = get().userSavings
+        const assumedSavings = userSavings > 0 ? userSavings : totalExpenses * 3
         if (totalExpenses === 0) return 0
         if (totalIncome === 0) return 0
-
-        // If there's a monthly deficit, calculate burn rate
         if (deficit > 0) {
-          // Conservative assumption: 3 months of expenses saved
-          const assumedSavings = totalExpenses * 3
           const monthlyBurn = deficit
-
           const runwayMonths = Math.floor(assumedSavings / monthlyBurn)
           return Math.max(0, runwayMonths)
         } else {
-          // If profitable, calculate time to build emergency fund
           const monthlySurplus = totalIncome - totalExpenses
           const emergencyFundTarget = totalExpenses * 6
-
           if (monthlySurplus <= 0) return 0
-
           return Math.ceil(emergencyFundTarget / monthlySurplus)
         }
       },
@@ -228,6 +219,9 @@ export const usePlannerStore = create<PlannerState>()(
             salary: 0,
           },
           growthRate: 10,
+          useBuffer: true,
+          userSavings: 0,
+          warChest: 0,
         })
       },
     }),

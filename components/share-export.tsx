@@ -56,9 +56,15 @@ export function ShareExport() {
   const handleExportPDF = () => {
     setGenerating("pdf")
     try {
+      const safetyBuffer = usePlannerStore.getState().getSafetyBuffer()
+      const warChest = usePlannerStore.getState().warChest
+      const freedomNumber = getTotalExpenses() + safetyBuffer + warChest
+      const savingsUsed = getTotalExpenses() * 3
+      const deficit = getTotalIncome() - freedomNumber
+
       generatePDF({
-        expenses,
-        income,
+        expenses: expenses as unknown as Record<string, number>,
+        income: income as unknown as Record<string, number>,
         currency,
         freedomPercentage: getFreedomPercentage(),
         totalExpenses: getTotalExpenses(),
@@ -66,6 +72,11 @@ export function ShareExport() {
         monthsToFreedom: getMonthsToFreedom(),
         growthRate,
         runwayMonths: getRunwayMonths(),
+        safetyBuffer,
+        warChest,
+        freedomNumber,
+        savingsUsed,
+        deficit,
       })
     } catch (error) {
       console.error("Failed to generate PDF:", error)

@@ -10,6 +10,11 @@ interface PlannerData {
   monthsToFreedom: number
   growthRate: number
   runwayMonths: number
+  safetyBuffer: number
+  warChest: number
+  freedomNumber: number
+  savingsUsed: number
+  deficit: number
 }
 
 export function generatePDF(data: PlannerData): void {
@@ -48,23 +53,46 @@ export function generatePDF(data: PlannerData): void {
   doc.text(`Freedom Score: ${data.freedomPercentage}%`, 20, 75)
   doc.text(`Status: ${freedomStatus}`, 20, 85)
 
+  // Summary Table Section
+  doc.setFontSize(16)
+  doc.setFont("helvetica", "bold")
+  doc.text("Key Metrics Summary", 20, 105)
+  doc.setFontSize(12)
+  doc.setFont("helvetica", "normal")
+  let yPos = 120
+  doc.text(`Monthly Expenses: ${symbol}${data.totalExpenses.toLocaleString()}  (Your total recurring monthly costs)`, 20, yPos)
+  yPos += 8
+  doc.text(`Safety Buffer: ${symbol}${data.safetyBuffer.toLocaleString()}  (Extra 25% for unexpected costs)`, 20, yPos)
+  yPos += 8
+  doc.text(`War Chest: ${symbol}${data.warChest.toLocaleString()}  (Extra monthly surplus goal)`, 20, yPos)
+  yPos += 8
+  doc.text(`Freedom Number: ${symbol}${data.freedomNumber.toLocaleString()}  (Required monthly income to safely quit)`, 20, yPos)
+  yPos += 8
+  doc.text(`Current Income: ${symbol}${data.totalIncome.toLocaleString()}  (All your income sources combined)`, 20, yPos)
+  yPos += 8
+  doc.text(`Deficit/Surplus: ${symbol}${data.deficit.toLocaleString()}  (How much you need to add or have extra per month)`, 20, yPos)
+  yPos += 8
+  doc.text(`Savings Used: ${symbol}${data.savingsUsed.toLocaleString()}  (Used for runway calculation)`, 20, yPos)
+  yPos += 8
+  doc.text(`Runway: ${data.runwayMonths} months  (How long you can last at your current burn)`, 20, yPos)
+
   // Monthly Expenses Breakdown
   doc.setFontSize(16)
   doc.setFont("helvetica", "bold")
-  doc.text("💸 Monthly Expenses", 20, 110)
+  doc.text("💸 Monthly Expenses", 20, 140)
 
   doc.setFontSize(12)
   doc.setFont("helvetica", "normal")
-  let yPos = 125
+  let expensesY = 155
   Object.entries(data.expenses).forEach(([key, value]) => {
     if (value > 0) {
       const label = key.charAt(0).toUpperCase() + key.slice(1)
-      doc.text(`${label}: ${symbol}${value.toLocaleString()}`, 25, yPos)
-      yPos += 10
+      doc.text(`${label}: ${symbol}${value.toLocaleString()}`, 25, expensesY)
+      expensesY += 10
     }
   })
   doc.setFont("helvetica", "bold")
-  doc.text(`Total Expenses: ${symbol}${data.totalExpenses.toLocaleString()}`, 25, yPos + 5)
+  doc.text(`Total Expenses: ${symbol}${data.totalExpenses.toLocaleString()}`, 25, expensesY + 5)
 
   // Monthly Income Breakdown
   yPos += 25
