@@ -307,16 +307,20 @@ export function GrowthProjection() {
           {/* Legend */}
           <div className="flex justify-center gap-4 text-xs text-gray-600">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 bg-green-600"></div>
+              <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(142, 76%, 36%)" }}></div>
               <span>Total Income</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 bg-orange-500 opacity-60" style={{ borderTop: "2px dashed" }}></div>
+              <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(25, 95%, 53%)" }}></div>
               <span>Safety Target</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 bg-red-500 opacity-60" style={{ borderTop: "2px dashed" }}></div>
+              <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(0, 84%, 60%)" }}></div>
               <span>Basic Expenses</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-0.5" style={{ backgroundColor: "hsl(217, 91%, 60%)" }}></div>
+              <span>MRR Only</span>
             </div>
           </div>
         </div>
